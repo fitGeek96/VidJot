@@ -1,6 +1,5 @@
 //jshint esversion:6
-// Load Idea Model
-import Idea from './models/Idea';
+require('./models/Idea');
 
 const express = require('express');
 const exphbs = require('express-handlebars');
@@ -22,6 +21,7 @@ mongoose.connect('mongodb://localhost/vidjot-dev', {
     })
     .catch(err => console.log(err));
 
+// Load Idea Model
 const Idea = mongoose.model('ideas');
 
 
@@ -40,6 +40,11 @@ app.get('/', (req, res) => {
     res.render('index', {
         title: title
     });
+});
+
+// Add Idea From
+app.get('/ideas/add', (req, res) => {
+    res.render('ideas/add');
 });
 
 // Index Route
