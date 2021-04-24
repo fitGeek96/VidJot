@@ -2,6 +2,7 @@
 require('./models/Idea');
 
 const express = require('express');
+const bodyParser = require('body-parser');
 const exphbs = require('express-handlebars');
 const mongoose = require('mongoose');
 
@@ -14,7 +15,7 @@ mongoose.Promise = global.Promise;
 // Connect to Mongoose
 mongoose.connect('mongodb://localhost/vidjot-dev', {
         useNewUrlParser: true,
-        useUnifiedTopology: true 
+        useUnifiedTopology: true
     })
     .then(() => {
         console.log('MongoDB Connected .... ');
@@ -24,15 +25,17 @@ mongoose.connect('mongodb://localhost/vidjot-dev', {
 // Load Idea Model
 const Idea = mongoose.model('ideas');
 
-
-
-
-
 // Handlebars Middleware 
 app.engine('handlebars', exphbs({
     defaultLayout: 'main'
 }));
 app.set('view engine', 'handlebars');
+
+// Body Parser Middleware
+app.use(bodyParser.urlencoded({
+    extended: false
+}));
+app.use(bodyParser.json());
 
 // Index Route
 app.get('/', (req, res) => {
@@ -45,6 +48,32 @@ app.get('/', (req, res) => {
 // Add Idea From
 app.get('/ideas/add', (req, res) => {
     res.render('ideas/add');
+});
+
+// Process Form 
+app.post('/ideas', (req, res) => {
+    let errors = [];
+
+    if (!req.body.title) {
+        errors.push({
+            text: 'Please add a title'
+        });
+    }
+    if (!req.body.details) {
+        errors.push({
+            text: 'Please add some details'
+        });
+    }
+
+    if (errors.length > 0) {
+        res.render('ideas/add', {
+            errors: errors,
+            title: req.body.title,
+            details: req.body.details
+        });
+    } else {
+        res.send('passed');
+    }
 });
 
 // Index Route
