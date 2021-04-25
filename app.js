@@ -1,5 +1,4 @@
 //jshint esversion:6
-require('./models/Idea');
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -13,8 +12,12 @@ const {
     allowInsecurePrototypeAccess
 } = require('@handlebars/allow-prototype-access');
 
+// initialize our Application
+const app = express(); 
 
-const app = express(); // initialize our Application
+// Load routes
+const ideas = require('./routes/ideas');
+const users = require('./routes/users');
 
 
 // Map global promise - get rid of warning 
@@ -30,8 +33,7 @@ mongoose.connect('mongodb://localhost/vidjot-dev', {
     })
     .catch(err => console.log(err));
 
-// Load Idea Model
-const Idea = mongoose.model('ideas');
+
 
 // Handlebars Middleware 
 app.engine('handlebars', exphbs({
@@ -85,93 +87,11 @@ app.get('/about', (req, res) => {
 });
 
 
-// Add Idea From
-app.get('/ideas/add', (req, res) => {
-    res.render('ideas/add');
-});
 
-// Edit Idea From
-app.get('/ideas/edit/:id', (req, res) => {
-    Idea.findOne({
-            _id: req.params.id
-        })
-        .then(idea => {
-            res.render('ideas/edit', {
-                idea: idea
-            });
-        });
-});
 
-// Process Form 
-app.post('/ideas', (req, res) => {
-    let errors = [];
-
-    if (!req.body.title) {
-        errors.push({
-            text: 'Please add a title'
-        });
-    }
-    if (!req.body.details) {
-        errors.push({
-            text: 'Please add some details'
-        });
-    }
-
-    if (errors.length > 0) {
-        res.render('ideas/add', {
-            errors: errors,
-            title: req.body.title,
-            details: req.body.details
-        });
-    } else {
-        const newUser = {
-            title: req.body.title,
-            details: req.body.details
-        };
-        new Idea(newUser)
-            .save()
-            .then(idea => {
-                req.flash('success_msg', 'Video Idea Added');
-                res.redirect('/ideas');
-            });
-    }
-});
-
-// Idea index Page 
-app.get('/ideas', (req, res) => {
-    Idea
-        .find({})
-        .then(ideas => {
-            res.render('ideas/index', {
-                ideas: ideas
-            });
-        });
-});
-
-// Edit Form process
-app.put('/ideas/:id', (req, res) => {
-    Idea.findOne({
-            _id: req.params.id
-        })
-        .then(idea => {
-            idea.title = req.body.title;
-            idea.details = req.body.details;
-            idea.save().then(idea => {
-                req.flash('success_msg', 'Video Idea Updated');
-                res.redirect('/ideas');
-            });
-        });
-});
-
-// Delete Idea 
-app.delete('/ideas/:id', (req, res) => {
-    Idea.deleteOne({
-        _id: req.params.id
-    }).then(() => {
-        req.flash('success_msg', 'Video Idea Removed');
-        res.redirect('/ideas');
-    });
-});
+// Use routes
+app.use('/ideas', ideas);
+app.use('/users', users);
 
 const port = 5000;
 app.listen(port, () => {
