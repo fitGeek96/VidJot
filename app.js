@@ -6,7 +6,9 @@ const bodyParser = require('body-parser');
 const exphbs = require('express-handlebars');
 const Handlebars = require('handlebars');
 const mongoose = require('mongoose');
-const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
+const methodOverride = require('method-override');
+const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access');
+
 
 const app = express(); // initialize our Application
 
@@ -38,7 +40,12 @@ app.set('view engine', 'handlebars');
 app.use(express.json());       // to support JSON-encoded bodies
 app.use(express.urlencoded({
     extended: false
-})); // to support URL-encoded bodies
+})); 
+ 
+
+// Method override midleware
+app.use(methodOverride('_method'));
+
 
 // Index Route
 app.get('/', (req, res) => {
@@ -117,7 +124,19 @@ app.get('/ideas', (req, res) => {
         });
 });
 
-
+// Edit Form process
+app.put('/ideas/:id', (req, res) => {
+    Idea.findOne({
+        _id: req.params.id
+    })
+    .then(idea => {
+        idea.title = req.body.title;
+        idea.details = req.body.details;
+        idea.save().then(idea => {
+            res.redirect('/ideas');
+        });
+    });
+});
 
 const port = 5000;
 app.listen(port, () => {
