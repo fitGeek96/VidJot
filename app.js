@@ -4,7 +4,9 @@ require('./models/Idea');
 const express = require('express');
 const bodyParser = require('body-parser');
 const exphbs = require('express-handlebars');
+const Handlebars = require('handlebars');
 const mongoose = require('mongoose');
+const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access')
 
 const app = express(); // initialize our Application
 
@@ -27,15 +29,16 @@ const Idea = mongoose.model('ideas');
 
 // Handlebars Middleware 
 app.engine('handlebars', exphbs({
-    defaultLayout: 'main'
+    defaultLayout: 'main',
+    handlebars: allowInsecurePrototypeAccess(Handlebars)
 }));
 app.set('view engine', 'handlebars');
 
-// Body Parser Middleware
-app.use(bodyParser.urlencoded({
+
+app.use(express.json());       // to support JSON-encoded bodies
+app.use(express.urlencoded({
     extended: false
-}));
-app.use(bodyParser.json());
+})); // to support URL-encoded bodies
 
 // Index Route
 app.get('/', (req, res) => {
@@ -44,6 +47,13 @@ app.get('/', (req, res) => {
         title: title
     });
 });
+
+
+// Index Route
+app.get('/about', (req, res) => {
+    res.render('about');
+});
+
 
 // Add Idea From
 app.get('/ideas/add', (req, res) => {
@@ -75,24 +85,25 @@ app.post('/ideas', (req, res) => {
         const newUser = {
             title: req.body.title,
             details: req.body.details
-        }
+        };
         new Idea(newUser)
-        .save()
-        .then( idea => {
-            res.redirect('/ideas');
-        });
+            .save()
+            .then(idea => {
+                res.redirect('/ideas');
+            });
     }
 });
 
-// Index Route
-app.get('/about', (req, res) => {
-    res.render('about');
+// Idea index Page 
+app.get('/ideas', (req, res) => {
+    Idea
+        .find({})
+        .then(ideas => {
+            res.render('ideas/index', {
+                ideas: ideas
+            });
+        });
 });
-
-
-
-
-
 
 
 
