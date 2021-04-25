@@ -7,7 +7,11 @@ const exphbs = require('express-handlebars');
 const Handlebars = require('handlebars');
 const mongoose = require('mongoose');
 const methodOverride = require('method-override');
-const {allowInsecurePrototypeAccess} = require('@handlebars/allow-prototype-access');
+const flash = require('connect-flash');
+const session = require('express-session');
+const {
+    allowInsecurePrototypeAccess
+} = require('@handlebars/allow-prototype-access');
 
 
 const app = express(); // initialize our Application
@@ -36,16 +40,35 @@ app.engine('handlebars', exphbs({
 }));
 app.set('view engine', 'handlebars');
 
+// Body Parser Middleware
 
-app.use(express.json());       // to support JSON-encoded bodies
+app.use(express.json()); // to support JSON-encoded bodies
 app.use(express.urlencoded({
     extended: false
-})); 
- 
+}));
+
 
 // Method override midleware
 app.use(methodOverride('_method'));
 
+// Express Session Midlleware
+app.use(session({
+    secret: 'secret',
+    resave: true,
+    saveUninitialized: true
+}));
+
+// Connect Falsh Middleware
+app.use(flash());
+
+// Global Variables
+app.use((req, res, next) => {
+    res.locals.success_msg = req.flash('success_msg');
+    res.locals.error_msg = req.flash('error_msg');
+    res.locals.error = req.flash('error');
+    next();
+
+});
 
 // Index Route
 app.get('/', (req, res) => {
@@ -70,13 +93,13 @@ app.get('/ideas/add', (req, res) => {
 // Edit Idea From
 app.get('/ideas/edit/:id', (req, res) => {
     Idea.findOne({
-        _id: req.params.id
-    })
-    .then(idea => {
-        res.render('ideas/edit', {
-            idea: idea
+            _id: req.params.id
+        })
+        .then(idea => {
+            res.render('ideas/edit', {
+                idea: idea
+            });
         });
-    });
 });
 
 // Process Form 
@@ -108,6 +131,7 @@ app.post('/ideas', (req, res) => {
         new Idea(newUser)
             .save()
             .then(idea => {
+                req.flash('success_msg', 'Video Idea Added');
                 res.redirect('/ideas');
             });
     }
@@ -127,15 +151,16 @@ app.get('/ideas', (req, res) => {
 // Edit Form process
 app.put('/ideas/:id', (req, res) => {
     Idea.findOne({
-        _id: req.params.id
-    })
-    .then(idea => {
-        idea.title = req.body.title;
-        idea.details = req.body.details;
-        idea.save().then(idea => {
-            res.redirect('/ideas');
+            _id: req.params.id
+        })
+        .then(idea => {
+            idea.title = req.body.title;
+            idea.details = req.body.details;
+            idea.save().then(idea => {
+                req.flash('success_msg', 'Video Idea Updated');
+                res.redirect('/ideas');
+            });
         });
-    });
 });
 
 // Delete Idea 
@@ -143,6 +168,7 @@ app.delete('/ideas/:id', (req, res) => {
     Idea.deleteOne({
         _id: req.params.id
     }).then(() => {
+        req.flash('success_msg', 'Video Idea Removed');
         res.redirect('/ideas');
     });
 });
