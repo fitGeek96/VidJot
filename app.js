@@ -1,6 +1,7 @@
 //jshint esversion:6
 
 const express = require('express');
+const path = require('path');
 const bodyParser = require('body-parser');
 const exphbs = require('express-handlebars');
 const Handlebars = require('handlebars');
@@ -43,12 +44,13 @@ app.engine('handlebars', exphbs({
 app.set('view engine', 'handlebars');
 
 // Body Parser Middleware
-
-app.use(express.json()); // to support JSON-encoded bodies
+app.use(express.json()); 
 app.use(express.urlencoded({
     extended: false
 }));
 
+// Method override middlware 
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Method override midleware
 app.use(methodOverride('_method'));
@@ -85,8 +87,6 @@ app.get('/', (req, res) => {
 app.get('/about', (req, res) => {
     res.render('about');
 });
-
-
 
 
 // Use routes
