@@ -21,7 +21,7 @@ const app = express();
 const ideas = require('./routes/ideas');
 const users = require('./routes/users');
 
-// Passport Config
+// // Passport Config
 require('./config/passport')(passport);
 
 
@@ -66,6 +66,10 @@ app.use(session({
     saveUninitialized: true
 }));
 
+// Passport Middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Connect Falsh Middleware
 app.use(flash());
 
@@ -74,8 +78,8 @@ app.use((req, res, next) => {
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');
     res.locals.error = req.flash('error');
+    res.locals.user = req.user || null;
     next();
-
 });
 
 // Index Route

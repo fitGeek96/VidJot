@@ -38,12 +38,12 @@ router.post('/register', (req, res) => {
             text: 'Password do not math'
         });
     }
-    if (req.body.password.length < 4) {
+    else if (req.body.password.length < 4) {
         errors.push({
             text: 'Password must be at least 4 characters'
         });
     }
-    if (errors.length > 0) {
+    else if (errors.length > 0) {
         res.render('users/register', {
             errors: errors,
             name: req.body.name,
@@ -52,8 +52,7 @@ router.post('/register', (req, res) => {
             confirm_password: req.body.confirm_password
         });
     } else {
-        User
-            .findOne({
+        User.findOne({
                 email: req.body.email
             })
             .then(user => {
@@ -67,7 +66,7 @@ router.post('/register', (req, res) => {
                         password: req.body.password
                     });
 
-                    bcrypt.genSalt(30, (err, salt) => {
+                    bcrypt.genSalt(10, (err, salt) => {
                         bcrypt.hash(newUser.password, salt, (err, hash) => {
                             if (err) throw err;
                             newUser.password = hash;
@@ -82,12 +81,9 @@ router.post('/register', (req, res) => {
                                     return;
                                 });
                         });
-
                     });
                 }
             });
-
-
     }
 });
 
