@@ -4,6 +4,7 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const exphbs = require('express-handlebars');
+const passport = require('passport');
 const Handlebars = require('handlebars');
 const mongoose = require('mongoose');
 const methodOverride = require('method-override');
@@ -19,6 +20,9 @@ const app = express();
 // Load routes
 const ideas = require('./routes/ideas');
 const users = require('./routes/users');
+
+// Passport Config
+require('./config/passport')(passport);
 
 
 // Map global promise - get rid of warning 

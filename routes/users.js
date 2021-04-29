@@ -20,6 +20,15 @@ router.get('/register', (req, res) => {
     res.render('users/register');
 });
 
+// Login Form Post
+router.post('/login', (req, res, next) => {
+    passport.authenticate('local', {
+        successRedirect: '/ideas',
+        failureRedirect: '/users/login',
+        failureFlash: true
+    })(req, res, next);
+});
+
 // Register Form Post 
 router.post('/register', (req, res) => {
     let errors = [];
@@ -58,7 +67,7 @@ router.post('/register', (req, res) => {
                         password: req.body.password
                     });
 
-                    bcrypt.genSalt(10, (err, salt) => {
+                    bcrypt.genSalt(30, (err, salt) => {
                         bcrypt.hash(newUser.password, salt, (err, hash) => {
                             if (err) throw err;
                             newUser.password = hash;
