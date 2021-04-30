@@ -22,9 +22,15 @@ router.get('/edit/:id', ensureAthenticated, (req, res) => {
             _id: req.params.id
         })
         .then(idea => {
-            res.render('ideas/edit', {
-                idea: idea
-            });
+            console.log(idea.user);
+            if (idea.user != req.user.id) {
+                req.flash('error_msg', 'Not Authorized to see others ideas');
+                res.redirect('/ideas');
+            } else {
+                res.render('ideas/edit', {
+                    idea: idea
+                });
+            }
         });
 });
 
@@ -52,7 +58,8 @@ router.post('/', ensureAthenticated, (req, res) => {
     } else {
         const newUser = {
             title: req.body.title,
-            details: req.body.details
+            details: req.body.details,
+            user: req.user.id
         };
         new Idea(newUser)
             .save()
@@ -66,7 +73,9 @@ router.post('/', ensureAthenticated, (req, res) => {
 // Idea index Page 
 router.get('/', ensureAthenticated, (req, res) => {
     Idea
-        .find({})
+        .find({
+            user: req.user.id
+        })
         .then(ideas => {
             res.render('ideas/index', {
                 ideas: ideas
